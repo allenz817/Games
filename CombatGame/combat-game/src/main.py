@@ -1,4 +1,4 @@
-from combat_game.src.player.attributes import PlayerAttributes
+from CombatGame.combat_game.src.player.attributes import PlayerAttributes
 from CombatGame.combat_game.src.player.mana import Mana
 from CombatGame.combat_game.src.cards.card_system import CardSystem
 from CombatGame.combat_game.src.combat.ai_opponent import AIOpponent
