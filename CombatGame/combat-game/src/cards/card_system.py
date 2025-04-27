@@ -1,4 +1,4 @@
-from CombatGame.combat_game.src.cards.card_data import CardData
+from .card_data import CardData
 
 class CardSystem:
     def __init__(self):
