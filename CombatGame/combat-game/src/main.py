@@ -4,7 +4,7 @@ from player.mana import Mana
 from cards.card_system import CardSystem
 from combat.ai_opponent import AIOpponent
 from combat.mechanics import is_game_over
-from ui.layout import setup_layout, draw_health_bar, draw_mana_bar, display_card_hand, update_layout
+from ui.layout import setup_layout, draw_game_screen, update_layout, handle_card_selection, get_selected_cards, clear_selected_cards
 
 class Game:
     def __init__(self):
@@ -19,7 +19,7 @@ class Game:
         self.player = PlayerAttributes(health=100, mana=Mana(10), damage=10, armor=5)
         self.ai = AIOpponent(name="AI Opponent", health=100, mana=Mana(10))
         self.card_system = CardSystem()
-        self.card_system.cards = CardSystem().shuffle_deck()
+        self.card_system.shuffle_deck()  # Shuffle the deck
         setup_layout()
 
     def game_loop(self):
@@ -47,13 +47,45 @@ class Game:
 
     def player_turn(self):
         print("Player's turn!")
-        draw_health_bar(self.player)
-        draw_mana_bar(self.player)
-        display_card_hand(self.player)
-        # Add logic for player to play cards and attack
+        player_turn_active = True
+        card_rects = None
+        play_button_rect = None
+
+        while player_turn_active:
+            # Draw the game screen
+            card_rects, play_button_rect = draw_game_screen(self.player, self.ai, self.card_system)
+            update_layout()
+            
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.game_over = True
+                    player_turn_active = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_SPACE:  # Example: End turn with SPACE key
+                        player_turn_active = False
+                elif event.type == pygame.MOUSEBUTTONDOWN:
+                    pos = pygame.mouse.get_pos()
+                    
+                    # Check if a card was clicked
+                    if card_rects and handle_card_selection(pos, card_rects):
+                        print("Card selected!")
+                    
+                    # Check if play button was clicked
+                    elif play_button_rect and play_button_rect.collidepoint(pos) and get_selected_cards():
+                        print("Playing selected cards!")
+                        # Play all selected cards
+                        for card in get_selected_cards():
+                            self.card_system.play_card(card)
+                        
+                        clear_selected_cards()
+                        player_turn_active = False  # End turn after playing cards
+            
+            # Control game speed
+            self.clock.tick(30)
 
     def ai_turn(self):
         print("AI's turn!")
+        # AI logic to play cards or attack
         self.ai.play_card(self.player)
 
     def check_game_status(self):
